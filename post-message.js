@@ -38,20 +38,19 @@ client.once('ready', async () => {
   try {
     console.log(`Logged in as ${client.user.tag}`);
 
-    // Fetch prices for all tokens at once
     const ids = Object.values(tokens).join(',');
-    const pricesData = await fetchPrices(ids);
-    const gbpRate = await fetchUsdToGbpRate();
+    const [pricesData, gbpRate] = await Promise.all([
+      fetchPrices(ids),
+      fetchUsdToGbpRate(),
+    ]);
 
-    // Helper to format each token price block
-    function formatToken(name, id) {
-      const usdPrice = pricesData[id]?.usd;
-      if (usdPrice === undefined) throw new Error(`Price missing for ${name}`);
-      const gbpPrice = usdPrice * gbpRate;
-      return `📈 **${name.toUpperCase()} Price:**\nUSD: $${usdPrice.toFixed(4)}\nGBP: £${gbpPrice.toFixed(4)}\n`;
-    }
+    const formatToken = (name, id) => {
+      const usd = pricesData[id]?.usd;
+      if (usd === undefined) throw new Error(`Price missing for ${name}`);
+      const gbp = usd * gbpRate;
+      return `📈 **${name} Price:**\nUSD: $${usd.toFixed(4)}\nGBP: £${gbp.toFixed(4)}\n`;
+    };
 
-    // Compose full message
     const message =
       `${formatToken('DOGE (Dogecoin)', tokens.doge)}\n` +
       `${formatToken('SHDW (Shadow Token)', tokens.shdw)}\n` +
@@ -60,15 +59,13 @@ client.once('ready', async () => {
       `-------------------------------------------------\n` +
       `📅 Updated: ${new Date().toUTCString()}`;
 
-    // Fetch channel & send message
     const channel = await client.channels.fetch(channelId);
     if (!channel) throw new Error('Channel not found');
 
     await channel.send(message);
-
-    console.log('Message sent successfully');
+    console.log('✅ Message sent');
   } catch (err) {
-    console.error('❌ Error posting prices:', err);
+    console.error('❌ Error:', err.message);
   } finally {
     client.destroy();
   }
