@@ -10,6 +10,12 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Debug environment values
+        run: |
+          echo "User: ${{ secrets.SERVER_USER }}"
+          echo "Host: ${{ secrets.SERVER_HOST }}"
+          echo "Port: ${{ secrets.SERVER_PORT }}"
+
       - name: Setup SSH key
         run: |
           mkdir -p ~/.ssh
