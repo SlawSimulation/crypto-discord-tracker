@@ -1,4 +1,4 @@
-name: Post DOGE & SHDW Price Message
+name: Post Crypto Prices
 
 on:
   schedule:
@@ -22,4 +22,3 @@ jobs:
         env:
           DISCORD_TOKEN: ${{ secrets.DISCORD_TOKEN }}
           DISCORD_CHANNEL_ID: ${{ secrets.DISCORD_CHANNEL_ID }}
-          API_KEY: ${{ secrets.API_KEY }}  # for DOGE price API Ninjas

@@ -4,54 +4,41 @@ import fetch from 'node-fetch';
 const client = new Client({ intents: [GatewayIntentBits.Guilds] });
 
 const token = process.env.DISCORD_TOKEN;
-const apiKey = process.env.API_KEY;
 
-async function fetchDogePrice() {
-  const res = await fetch('https://api.api-ninjas.com/v1/cryptoprice?symbol=DOGEUSD', {
-    headers: { 'X-Api-Key': apiKey },
-  });
-  if (!res.ok) throw new Error(`API Ninjas Doge API error: ${res.statusText}`);
-  const data = await res.json();
-  const priceUsd = Number(data.price);
-  if (isNaN(priceUsd)) throw new Error('Invalid Doge price');
-  return priceUsd;
-}
+const COINGECKO_API = 'https://api.coingecko.com/api/v3/simple/price';
+const tokens = {
+  doge: 'dogecoin',
+  shdw: 'genesysgo-shadow',
+  yfi: 'yearn-finance',
+  usdc: 'usd-coin',
+};
 
-async function fetchShdwPrice() {
-  const res = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=genesysgo-shadow&vs_currencies=usd');
-  if (!res.ok) throw new Error(`CoinGecko SHDW API error: ${res.statusText}`);
-  const data = await res.json();
-  const priceUsd = Number(data["genesysgo-shadow"]?.usd);
-  if (isNaN(priceUsd)) throw new Error('Invalid SHDW price');
-  return priceUsd;
-}
-
-async function fetchUsdToGbpRate() {
-  const res = await fetch('https://open.er-api.com/v6/latest/USD');
-  if (!res.ok) throw new Error(`Exchange API error: ${res.statusText}`);
-  const data = await res.json();
-  const gbpRate = data.rates?.GBP;
-  if (!gbpRate) throw new Error('GBP rate missing');
-  return gbpRate;
+async function fetchPrices() {
+  const ids = Object.values(tokens).join(',');
+  const url = `${COINGECKO_API}?ids=${ids}&vs_currencies=usd`;
+  const response = await fetch(url);
+  if (!response.ok) throw new Error(`CoinGecko API error: ${response.statusText}`);
+  return response.json();
 }
 
 async function updateStatus() {
   try {
-    const [dogeUsd, shdwUsd, gbpRate] = await Promise.all([
-      fetchDogePrice(),
-      fetchShdwPrice(),
-      fetchUsdToGbpRate(),
-    ]);
+    const data = await fetchPrices();
 
-    const dogeGbp = dogeUsd * gbpRate;
-    const shdwGbp = shdwUsd * gbpRate;
+    const prices = {
+      DOGE: data[tokens.doge]?.usd,
+      SHDW: data[tokens.shdw]?.usd,
+      YFI: data[tokens.yfi]?.usd,
+      USDC: data[tokens.usdc]?.usd,
+    };
 
-    const status = `DOGE $${dogeUsd.toFixed(4)} | SHDW $${shdwUsd.toFixed(4)} | GBP £${((dogeGbp + shdwGbp) / 2).toFixed(4)}`;
+    // Format prices into one line for Discord status
+    const status = `DOGE $${prices.DOGE?.toFixed(4)} | SHDW $${prices.SHDW?.toFixed(4)} | YFI $${prices.YFI?.toFixed(2)} | USDC $${prices.USDC?.toFixed(2)}`;
 
     await client.user.setActivity(status, { type: 'WATCHING' });
     console.log(`Status updated: ${status}`);
-  } catch (e) {
-    console.error('Failed to update status:', e);
+  } catch (err) {
+    console.error('❌ Failed to update status:', err);
   }
 }
 
