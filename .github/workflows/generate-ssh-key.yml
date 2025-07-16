@@ -12,20 +12,17 @@ jobs:
         id: generate
         run: |
           ssh-keygen -t ed25519 -C "github-actions" -f key -N ""
-          echo "PRIVATE_KEY<<EOF" >> $GITHUB_OUTPUT
-          cat key >> $GITHUB_OUTPUT
-          echo "EOF" >> $GITHUB_OUTPUT
-          echo "PUBLIC_KEY<<EOF" >> $GITHUB_OUTPUT
-          cat key.pub >> $GITHUB_OUTPUT
-          echo "EOF" >> $GITHUB_OUTPUT
+          echo "PRIVATE_KEY<<EOF" >> $GITHUB_ENV
+          cat key >> $GITHUB_ENV
+          echo "EOF" >> $GITHUB_ENV
+          echo "PUBLIC_KEY<<EOF" >> $GITHUB_ENV
+          cat key.pub >> $GITHUB_ENV
+          echo "EOF" >> $GITHUB_ENV
 
-      - name: Show Private Key (copy this and save securely)
+      - name: Output Private Key (save securely)
         run: |
-          echo "-----BEGIN PRIVATE KEY-----"
-          echo "${{ steps.generate.outputs.PRIVATE_KEY }}"
-          echo "-----END PRIVATE KEY-----"
+          echo "${PRIVATE_KEY}"
 
-      - name: Show Public Key (add this to your server authorized_keys)
+      - name: Output Public Key (add to authorized_keys)
         run: |
-          echo ${{ steps.generate.outputs.PUBLIC_KEY }}
-
+          echo "${PUBLIC_KEY}"
