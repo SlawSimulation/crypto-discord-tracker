@@ -27,4 +27,5 @@ jobs:
 
       - name: Show Public Key (add this to your server authorized_keys)
         run: |
-          echo "${{ steps.generate.outputs.PUBLIC_KEY }}"
+          echo ${{ steps.generate.outputs.PUBLIC_KEY }}
+
