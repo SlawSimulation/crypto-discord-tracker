@@ -1,24 +1,23 @@
-name: Update Bot Status
+name: Update Discord Bot Status Remotely
 
 on:
   schedule:
-    - cron: '*/5 * * * *'  # every 5 minutes UTC
+    - cron: '*/5 * * * *'  # every 15 minutes
   workflow_dispatch:
 
 jobs:
-  update-status:
+  update-remote:
     runs-on: ubuntu-latest
+
     steps:
-      - uses: actions/checkout@v3
+      - name: Setup SSH key
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SERVER_SSH_KEY }}" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          ssh-keyscan -p ${{ secrets.SERVER_PORT }} ${{ secrets.SERVER_HOST }} >> ~/.ssh/known_hosts
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: '18'
-
-      - run: npm install
-
-      - name: Run update-status.js
-        run: node update-status.js
-        env:
-          DISCORD_TOKEN: ${{ secrets.DISCORD_TOKEN }}
+      - name: Run update-status.js remotely
+        run: |
+          ssh -p ${{ secrets.SERVER_PORT }} ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} \
+          "cd /path/to/your/crypto-discord-tracker && node update-status.js"
