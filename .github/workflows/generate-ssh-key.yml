@@ -1,0 +1,27 @@
+name: Generate SSH Keypair
+
+on:
+  workflow_dispatch:
+
+jobs:
+  generate-key:
+    runs-on: ubuntu-latest
+    outputs:
+      private_key: ${{ steps.generate.outputs.private_key }}
+      public_key: ${{ steps.generate.outputs.public_key }}
+
+    steps:
+      - name: Generate SSH keypair
+        id: generate
+        run: |
+          ssh-keygen -t ed25519 -C "github-actions" -f key -N ""
+          PRIVATE_KEY=$(cat key)
+          PUBLIC_KEY=$(cat key.pub)
+          echo "::set-output name=private_key::$PRIVATE_KEY"
+          echo "::set-output name=public_key::$PUBLIC_KEY"
+
+      - name: Show Private Key (copy this and save securely)
+        run: echo "${{ steps.generate.outputs.private_key }}"
+
+      - name: Show Public Key (add this to your server authorized_keys)
+        run: echo "${
