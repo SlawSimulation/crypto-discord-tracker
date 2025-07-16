@@ -1,4 +1,4 @@
-name: Post SHDW Price Message
+name: Post DOGE & SHDW Price Message
 
 on:
   schedule:
@@ -10,12 +10,16 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
+
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
           node-version: '18'
+
       - run: npm install
+
       - run: node post-message.js
         env:
           DISCORD_TOKEN: ${{ secrets.DISCORD_TOKEN }}
           DISCORD_CHANNEL_ID: ${{ secrets.DISCORD_CHANNEL_ID }}
+          API_KEY: ${{ secrets.API_KEY }}  # for DOGE price API Ninjas
