@@ -24,7 +24,6 @@ async function fetchPrices() {
 async function updateStatus() {
   try {
     const data = await fetchPrices();
-
     const prices = {
       DOGE: data[tokens.doge]?.usd,
       SHDW: data[tokens.shdw]?.usd,
@@ -32,11 +31,9 @@ async function updateStatus() {
       USDC: data[tokens.usdc]?.usd,
     };
 
-    // Format prices into one line for Discord status
     const status = `DOGE $${prices.DOGE?.toFixed(4)} | SHDW $${prices.SHDW?.toFixed(4)} | YFI $${prices.YFI?.toFixed(2)} | USDC $${prices.USDC?.toFixed(2)}`;
-
     await client.user.setActivity(status, { type: 'WATCHING' });
-    console.log(`Status updated: ${status}`);
+    console.log(`✅ Status updated: ${status}`);
   } catch (err) {
     console.error('❌ Failed to update status:', err);
   }
@@ -45,8 +42,9 @@ async function updateStatus() {
 client.once('ready', async () => {
   console.log(`Logged in as ${client.user.tag}`);
   await updateStatus();
-  await client.destroy();
-  process.exit(0);
+
+  // Update every 5 minutes
+  setInterval(updateStatus, 5 * 60 * 1000);
 });
 
 client.login(token);
